@@ -1,0 +1,82 @@
+name: CI/CD Pipeline Auto Deploy
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup Bun
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      # 3. Install dependencies using Bun
+      - name: Install dependencies
+        run: |
+          bun install
+
+      # 4. Build the project (jika diperlukan)
+      - name: Build project
+        run: |
+          if ! bun run build; then
+            echo "Build failed. Sending notification..."
+            curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
+              -H "Content-Type: application/json" \
+              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Build failed \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+            exit 1
+          else
+            echo "Build succeeded."
+          fi
+
+      # 5. Deploy to VPS using SSH
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASS }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            # Stop existing PM2 process (if any)
+            pm2 stop app || true
+            pm2 delete app || true
+
+            # Updating repository information
+            TARGET_DIR=~/NimeStreamAPIHono
+            REPO_URL=https://github.com/muhammadsaefulr/NimeStreamAPIHono.git
+
+            # Check if the target directory exists
+            if [ -d "$TARGET_DIR" ]; then
+                echo "Directory $TARGET_DIR exists. Pulling latest changes..."
+                cd "$TARGET_DIR" || exit
+                git pull origin main
+            else
+                echo "Directory $TARGET_DIR not found. Cloning the repository..."
+                git clone "$REPO_URL" "$TARGET_DIR"
+            fi
+
+            # Install dependencies using Bun
+            cd ~/NimeStreamAPIHono
+            bun install
+
+            # Start the application using PM2
+            if ! pm2 start bun --name "NimeStreamAPIHono" -- run start; then
+              curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
+                  -H "Content-Type: application/json" \
+                  -d '{"session":"mysess","to":"6288219406742","text":"\n \n PM2 start failed \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+              exit 1
+            else
+              curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
+                  -H "Content-Type: application/json" \
+                  -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application started successfully using PM2 \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n \n"}'
+            fi

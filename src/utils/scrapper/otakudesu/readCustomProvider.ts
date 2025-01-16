@@ -2,6 +2,7 @@ import { CheerioAPI, load } from "cheerio";
 import mainService, {
   pdrainExtractorServicePromise,
 } from "service/mainService/mainService";
+import PdrainExtractorService from "./PdreainExtractor";
 
 const url = "https://otakudesu.cloud/";
 class WebScraperOtakudesu {
@@ -194,42 +195,42 @@ class WebScraperOtakudesu {
     let AnimeSource: any[] = [];
     let epsList: any[] = [];
 
-    $(".keyingpost li").each((i, el) => {
+    $('.keyingpost li').each((i, el) => {
       const data = {
-        title: $(el).find("a").text(),
-        links: $(el).find("a").attr("href"),
+        title: $(el).find('a').text(),
+        links: $(el).find('a').attr('href'),
       };
 
       epsList.push(data);
     });
 
-    $(".download ul li").each((i, el) => {
+    $('.download ul li').each((i, el) => {
       const dataList: any[] = [];
-      let titleRes = $(el).find("strong").text();
+      let titleRes = $(el).find('strong').text();
       $(el)
-        .find("a")
+        .find('a')
         .each((i, el) => {
           let title = $(el).text();
-          let links = $(el).attr("href");
+          let links = $(el).attr('href');
           dataList.push({ title, links });
         });
       AnimeSource.push({ res: titleRes, dataList });
     });
 
-    let partsSliced = $(".venutama")
-      .find("h1.posttl")
+    let partsSliced = $('.venutama')
+      .find('h1.posttl')
       .text()
       .split(/^(.*?)\s(Episode\s\d+\sSubtitle\sIndonesia)$/i);
 
     const dataSource = {
       judulAnime: partsSliced[1],
       epsNow: partsSliced[2],
-      nextEpsLinks: $(".flir").find("a:contains('Next Eps.')").attr("href"),
-      releaseOn: $(".kategoz")
+      nextEpsLinks: $('.flir').find("a:contains('Next Eps.')").attr('href'),
+      releaseOn: $('.kategoz')
         .find("span:contains('Release on')")
         .text()
-        .replace("Release on", ""),
-      vidSourceLinks: $(".responsive-embed-stream iframe").attr("src"),
+        .replace('Release on', ''),
+      vidSourceLinks: $('.responsive-embed-stream iframe').attr('src'),
     };
     data = {
       title: dataSource.judulAnime,
@@ -241,11 +242,11 @@ class WebScraperOtakudesu {
     };
 
     const pdrainSource = AnimeSource.filter((source) =>
-      /(mp4|0p)/i.test(source.res.toLowerCase())
+      /(mp4|0p)/i.test(source.res.toLowerCase()),
     )
       .map((source) => {
         const filteredDataList = source.dataList.filter(
-          (item: any) => item.title.trim().toLowerCase() === "pdrain"
+          (item: any) => item.title.trim().toLowerCase() === 'pdrain',
         );
         return filteredDataList.length > 0
           ? { resolution: source.res, link: filteredDataList[0].links.trim() }
@@ -255,7 +256,7 @@ class WebScraperOtakudesu {
 
     const resultPdrain: any[] = [];
     for (const datapdrain of pdrainSource) {
-      const result = await mainService.pdrainExtractorService(datapdrain.link);
+      const result = await PdrainExtractorService.extractUrl(datapdrain.link);
       if (result !== null) {
         let res = datapdrain.resolution;
         let links = result;

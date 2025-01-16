@@ -20,23 +20,27 @@ jobs:
         with:
           bun-version: latest
 
-      # 3. Install dependencies using Bun
-      - name: Install dependencies
-        run: |
-          bun install
-
       - name: Verify application
         run: |
-          echo "Starting the application to verify it runs correctly..."
-          if ! bun run start; then
+          echo "Starting the application in the background to verify it runs correctly..."
+          bun run start > server.log 2>&1 &
+          SERVER_PID=$!
+
+          # Wait for the server to start (e.g., check if it's listening on the port)
+          echo "Waiting for the server to start..."
+          sleep 10 # Adjust this delay as needed
+
+          # Check if the server is running
+          if ! curl -s http://localhost:8020 > /dev/null; then
             echo "Application failed to start. Sending notification..."
             curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
               -H "Content-Type: application/json" \
               -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application failed to start \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+            kill $SERVER_PID || true
             exit 1
           else
             echo "Application started successfully. Stopping it now..."
-            pkill -f "bun run start" || true
+            kill $SERVER_PID || true
           fi
 
       # 5. Deploy to VPS using SSH

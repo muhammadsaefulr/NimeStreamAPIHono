@@ -23,7 +23,6 @@ jobs:
       - name: Verify application
         run: |
           echo "Starting the application and checking logs in real-time..."
-          
           # Run the server and pipe its output to a log file
           bun run start > server.log 2>&1 &
           SERVER_PID=$!
@@ -32,13 +31,19 @@ jobs:
           echo "Waiting for the server to start..."
           if timeout 15s stdbuf -oL tail -f server.log | grep -q "Started development server"; then
             echo "Application started successfully."
-            kill $SERVER_PID || true
+            # Ensure the process is still running before attempting to kill it
+            if ps -p $SERVER_PID > /dev/null; then
+              kill $SERVER_PID || true
+            fi
           else
             echo "Application failed to start within 15 seconds. Sending notification..."
             curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
               -H "Content-Type: application/json" \
-              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Build failed to start within 15 seconds \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
-            kill $SERVER_PID || true
+              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application failed to start within 15 seconds \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+            # Ensure the process is still running before attempting to kill it
+            if ps -p $SERVER_PID > /dev/null; then
+              kill $SERVER_PID || true
+            fi
             exit 1
           fi
 

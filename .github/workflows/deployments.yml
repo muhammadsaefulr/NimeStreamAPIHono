@@ -14,44 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Setup Bun
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Verify application
-        run: |
-          echo "Starting the application in the background..."
-          bun run start > server.log 2>&1 &
-          SERVER_PID=$!
-
-          echo "Waiting for the server to start..."
-          # Monitor log file for the specific text
-          TIMEOUT=30 # Maksimal waktu tunggu dalam detik
-          START_TIME=$(date +%s)
-
-          while true; do
-            if grep -q "Started development server http://localhost:8020" server.log; then
-              echo "Application started successfully."
-              break
-            fi
-
-            CURRENT_TIME=$(date +%s)
-            ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
-
-            if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
-              echo "Timeout: Application did not start within $TIMEOUT seconds."
-              cat server.log
-              kill $SERVER_PID || true
-              exit 1
-            fi
-
-            sleep 1
-          done
-
-          echo "Server is running. Proceeding to the next task..."
-
       # 5. Deploy to VPS using SSH
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v0.1.7

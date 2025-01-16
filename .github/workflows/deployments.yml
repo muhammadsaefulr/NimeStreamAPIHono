@@ -24,8 +24,8 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             # Stop existing PM2 process (if any)
-            pm2 stop app || true
-            pm2 delete app || true
+            pm2 stop NimeStreamAPIHono || true
+            pm2 delete NimeStreamAPIHono || true
 
             # Updating repository information
             TARGET_DIR=~/NimeStreamAPIHono

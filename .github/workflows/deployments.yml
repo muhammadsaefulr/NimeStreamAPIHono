@@ -49,10 +49,10 @@ jobs:
             if ! pm2 start bun --name "NimeStreamAPIHono" -- run start; then
               curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
                   -H "Content-Type: application/json" \
-                  -d '{"session":"mysess","to":"6288219406742","text":"\n \n PM2 start failed \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+                  -d '{"session":"mysess","to":"6288219406742","text":"\n \n PM2 build failed \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
               exit 1
             else
               curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
                   -H "Content-Type: application/json" \
-                  -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application started successfully using PM2 \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n \n"}'
+                  -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application build successfully using PM2 \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n \n"}'
             fi

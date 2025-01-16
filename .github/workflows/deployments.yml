@@ -22,30 +22,26 @@ jobs:
 
       - name: Verify application
         run: |
-          echo "Starting the application and checking logs in real-time..."
-          # Run the server and pipe its output to a log file
+          echo "Starting the application in the background..."
           bun run start > server.log 2>&1 &
           SERVER_PID=$!
 
-          # Use timeout and grep to check logs in real-time
           echo "Waiting for the server to start..."
-          if timeout 15s stdbuf -oL tail -f server.log | grep -q "Started development server"; then
+          sleep 5 # Tunggu beberapa detik agar server punya waktu untuk start
+
+          # Check if the server is reachable
+          if curl -s http://localhost:8020 > /dev/null; then
             echo "Application started successfully."
-            # Ensure the process is still running before attempting to kill it
-            if ps -p $SERVER_PID > /dev/null; then
-              kill $SERVER_PID || true
-            fi
+            kill $SERVER_PID || true
           else
-            echo "Application failed to start within 15 seconds. Sending notification..."
+            echo "Application failed to start. Sending notification..."
             curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
               -H "Content-Type: application/json" \
-              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application failed to start within 15 seconds \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
-            # Ensure the process is still running before attempting to kill it
-            if ps -p $SERVER_PID > /dev/null; then
-              kill $SERVER_PID || true
-            fi
+              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application failed to start \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+            kill $SERVER_PID || true
             exit 1
           fi
+
 
       # 5. Deploy to VPS using SSH
       - name: Deploy to VPS

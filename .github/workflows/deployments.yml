@@ -25,17 +25,19 @@ jobs:
         run: |
           bun install
 
-      # 4. Build the project (jika diperlukan)
-      - name: Build project
+     - name: Verify application
         run: |
-          if ! bun run build; then
-            echo "Build failed. Sending notification..."
+          echo "Starting the application to verify it runs correctly..."
+          if ! bun run start; then
+            echo "Application failed to start. Sending notification..."
             curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
               -H "Content-Type: application/json" \
-              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Build failed \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
+              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application failed to start \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
             exit 1
           else
-            echo "Build succeeded."
+            echo "Application started successfully. Stopping it now..."
+            # Stop the application (if it runs in the foreground)
+            pkill -f "bun run start" || true
           fi
 
       # 5. Deploy to VPS using SSH

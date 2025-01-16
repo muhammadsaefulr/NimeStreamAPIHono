@@ -25,7 +25,7 @@ jobs:
         run: |
           bun install
 
-     - name: Verify application
+      - name: Verify application
         run: |
           echo "Starting the application to verify it runs correctly..."
           if ! bun run start; then
@@ -36,7 +36,6 @@ jobs:
             exit 1
           else
             echo "Application started successfully. Stopping it now..."
-            # Stop the application (if it runs in the foreground)
             pkill -f "bun run start" || true
           fi
 

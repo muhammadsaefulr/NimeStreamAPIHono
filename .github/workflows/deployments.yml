@@ -27,21 +27,30 @@ jobs:
           SERVER_PID=$!
 
           echo "Waiting for the server to start..."
-          sleep 5 # Tunggu beberapa detik agar server punya waktu untuk start
+          # Monitor log file for the specific text
+          TIMEOUT=30 # Maksimal waktu tunggu dalam detik
+          START_TIME=$(date +%s)
 
-          # Check if the server is reachable
-          if curl -s http://localhost:8020 > /dev/null; then
-            echo "Application started successfully."
-            kill $SERVER_PID || true
-          else
-            echo "Application failed to start. Sending notification..."
-            curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
-              -H "Content-Type: application/json" \
-              -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application failed to start \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }} \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
-            kill $SERVER_PID || true
-            exit 1
-          fi
+          while true; do
+            if grep -q "Started development server http://localhost:8020" server.log; then
+              echo "Application started successfully."
+              break
+            fi
 
+            CURRENT_TIME=$(date +%s)
+            ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+
+            if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
+              echo "Timeout: Application did not start within $TIMEOUT seconds."
+              cat server.log
+              kill $SERVER_PID || true
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          echo "Server is running. Proceeding to the next task..."
 
       # 5. Deploy to VPS using SSH
       - name: Deploy to VPS

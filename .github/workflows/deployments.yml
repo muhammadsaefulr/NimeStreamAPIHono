@@ -23,10 +23,6 @@ jobs:
           password: ${{ secrets.VPS_PASS }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Stop existing PM2 process (if any)
-            pm2 stop NimeStreamAPIHono || true
-            pm2 delete NimeStreamAPIHono || true
-
             # Updating repository information
             TARGET_DIR=~/NimeStreamAPIHono
             REPO_URL=https://github.com/muhammadsaefulr/NimeStreamAPIHono.git
@@ -45,14 +41,24 @@ jobs:
             cd ~/NimeStreamAPIHono
             bun install
 
-            # Start the application using PM2
-            if ! pm2 start bun --name "NimeStreamAPIHono" -- run start; then
-              curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
+            # Cek apakah proses NimeStreamAPIHono sudah berjalan
+            if ! pm2 list | grep -q "NimeStreamAPIHono"; then
+              # Jika proses tidak ditemukan, jalankan aplikasi menggunakan PM2
+              if ! pm2 start bun --name "NimeStreamAPIHono" -- run start; then
+                # Jika gagal menjalankan PM2, kirim notifikasi gagal
+                curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
                   -H "Content-Type: application/json" \
                   -d '{"session":"mysess","to":"6288219406742","text":"\n \n PM2 build failed \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n"}'
-              exit 1
-            else
-              curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
+                exit 1
+              else
+                # Jika berhasil menjalankan PM2, kirim notifikasi sukses
+                curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
                   -H "Content-Type: application/json" \
                   -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application build successfully using PM2 \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n \n"}'
+              fi
+            else
+              # Jika proses sudah berjalan, kirim notifikasi bahwa proses sudah ada
+              curl -X POST https://wagate.msaepul.my.id/message/send-buildinfo \
+                -H "Content-Type: application/json" \
+                -d '{"session":"mysess","to":"6288219406742","text":"\n \n Application is already running using PM2 \n Github Action JobId: ${{ github.run_id }} \n At Github Repository: ${{ github.repository }}) \n \nJob Url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} \n \n"}'
             fi

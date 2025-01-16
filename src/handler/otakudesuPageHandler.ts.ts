@@ -25,9 +25,9 @@ class otakudesuPageHandler {
 
   static getAnimeGenre = async (c: Context) => {
     try {
-      const { pathname, page } = c.req.param();
+      const { genre, pageNumber } = c.req.param();
 
-      const responseData = await AnimePageServiceOd.getGenreAnimeListsOd(pathname, page);
+      const responseData = await AnimePageServiceOd.getGenreAnimeListsOd(genre, pageNumber);
 
       if (!responseData) {
         return c.json({ message: "Data Tidak Ditemukan !" }, 404);
@@ -48,7 +48,7 @@ class otakudesuPageHandler {
 
   static getAnimeEpisodeLists = async (c: Context) => {
     try {
-      const pathname = c.req.param("pathname");
+      const pathname = c.req.param("judulAnime");
       const responseData = await AnimePageServiceOd.getAnimeEpisodeListsOd(
         pathname
       );
@@ -100,7 +100,7 @@ class otakudesuPageHandler {
 
   static getSearchAnimes = async (c: Context) => {
     try {
-      const dataQuery = c.req.query("q");
+      const dataQuery = c.req.query("judul");
 
       if (!dataQuery) {
         return c.json({ message: "Please insert data on query ?q= !" }, 400);
@@ -126,6 +126,34 @@ class otakudesuPageHandler {
       throw new Error(`${e}`);
     }
   };
+
+
+static getOngoingAnimeList = async (c: Context) => {
+  try {
+    const pathpageNumber = c.req.param("pageNumber");
+
+    if (!pathpageNumber || isNaN(parseInt(pathpageNumber))) {
+      return c.json({ message: "Invalid Page Number !" }, 400);
+    }
+
+    const responseData = await AnimePageServiceOd.getOngoingAnimeListOd(parseInt(pathpageNumber));
+
+    if (!responseData) {
+      return c.json({ message: "Data Tidak Ditemukan !" }, 404);
+    }
+
+    return c.json(
+      {
+        status: 200,
+        message: "Berhasil Mengambil Data !",
+        data: responseData,
+      },
+      200
+    );
+  } catch (e) {
+    throw new Error(`${e}`);
+  }
 }
+};
 
 export default otakudesuPageHandler;

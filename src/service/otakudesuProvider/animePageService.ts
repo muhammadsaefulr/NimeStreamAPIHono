@@ -22,6 +22,13 @@ class AnimePageServiceOd {
     return data;
   }
 
+  static async getOngoingAnimeListOd(pageNumber: number){
+    const urls = `ongoing-anime/page/${pageNumber}`
+    const data = await WebScraperOtakudesu.scrapeOngoingAnime(urls)
+
+    return data
+  }
+
   static async getAnimeVideoPlayOd(pathname: string){
     const dataPath = `episode/${pathname}`
     const data = await WebScraperOtakudesu.scrapeVideoAnimeSource(dataPath)

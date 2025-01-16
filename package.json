@@ -4,11 +4,14 @@
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
+    "@hono/swagger-ui": "^0.5.0",
+    "@hono/zod-openapi": "^0.18.3",
     "axios": "^1.7.2",
     "cheerio": "^1.0.0-rc.12",
     "hono": "^4.3.3",
     "mongoose": "^8.3.4",
-    "puppeteer": "^22.10.0"
+    "puppeteer": "^22.10.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/bun": "latest"

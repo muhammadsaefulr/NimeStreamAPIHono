@@ -170,6 +170,24 @@ class WebScraperOtakudesu {
     return AnimeList.slice(0, 15);
   }
 
+  static async scrapeOngoingAnime(pathUri: string): Promise<any> {
+    const $ = await this.cheerioInstance(pathUri);
+    const dataInfo: any[] = []
+    
+    $('.venz li').each((i, el) => {
+      const data = {
+        title: $(el).find('.jdlflm').text(),
+        epsNow: $(el).find('.epz').text(),
+        AnimeLinks: $(el).find('.thumb a').attr('href'),
+        updateAnime: $(el).find('.epztipe').text(),
+        thumbnailImage: $(el).find('.thumbz img').attr('src'),
+      };
+      dataInfo.push(data);
+    });
+
+    return dataInfo.slice(0, 15)
+  }
+
   static async scrapeVideoAnimeSource(pathUri: string): Promise<any> {
     const $ = await this.cheerioInstance(pathUri);
     let data = {};

@@ -32,6 +32,7 @@ class AnimePageServiceOd {
   static async getAnimeVideoPlayOd(pathname: string){
     const dataPath = `episode/${pathname}`
     const data = await WebScraperOtakudesu.scrapeVideoAnimeSource(dataPath)
+    console.log(data)
 
     return data
   }

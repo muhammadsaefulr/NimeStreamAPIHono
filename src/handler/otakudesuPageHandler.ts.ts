@@ -76,9 +76,9 @@ class otakudesuPageHandler {
 
   static getAnimeVideoPlay = async (c: Context) => {
     try {
-      const { pathname } = c.req.param();
+      const { urlAnimeEps } = c.req.param();
       const responseData = await AnimePageServiceOd.getAnimeVideoPlayOd(
-        pathname!
+        urlAnimeEps
       );
 
       if (!responseData) {

@@ -20,10 +20,9 @@ const headers = {
   'Cache-Control': 'max-age=0',
 };
 
-
 class WebScraperOtakudesu {
   private static async fetchHtml(url: string): Promise<string> {
-    const response = await axios.get(url, { headers });
+    const response = await axios.get(url, { headers: headers });
     return await response.data;
   }
 

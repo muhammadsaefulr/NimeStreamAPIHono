@@ -1,4 +1,4 @@
-import otakudesuPageHandler from "handler/otakudesuPageHandler.ts";
+import otakudesuPageHandler from "handler/otakudesuPageHandler";
 import { Hono } from "hono";
 
 const animeRoutes = new Hono();

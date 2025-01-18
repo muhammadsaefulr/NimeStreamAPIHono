@@ -5,24 +5,26 @@ import { errorHandler } from "middleware/middleware";
 import { cors } from "hono/cors";
 import mainRoutes from "routes/mainRoutes";
 import { swaggerUI } from "@hono/swagger-ui";
+
 const app = new Hono();
 
+// CORS untuk akses publik - letakkan di awal
+app.use('*', cors({
+  origin: '*',  // Mengizinkan semua origin
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['*'],  // Mengizinkan semua headers
+}));
+
+// Middleware lain
+app.use('*', logger());
 app.onError(errorHandler);
+
+// Routes
 app.get("/", (c) => c.json({ message: "Service Is Up !" }, 200));
 app.route("/", animeRoutes);
 app.route("/main/api", mainRoutes);
 
-app.use(
-  "*",
-  logger(),
-  cors({
-    origin: "http://localhost:5173",
-    allowMethods: ["POST", "GET", "OPTIONS"],
-    maxAge: 600,
-    credentials: false,
-  })
-);
-
+// Swagger
 app.get('/doc', (c) => {
   return c.json({
     openapi: '3.0.0',
@@ -33,7 +35,7 @@ app.get('/doc', (c) => {
   });
 });
 
-app.get('/ui', swaggerUI({ url: '/doc' }))
+app.get('/ui', swaggerUI({ url: '/doc' }));
 
 export default {
   port: 8020,

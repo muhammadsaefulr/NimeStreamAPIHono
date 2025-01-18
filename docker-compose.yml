@@ -9,7 +9,8 @@ services:
     environment:
       - FIREWALL=1
     volumes:
-      - ~/ovpn/Netherland.ovpn:/vpn/config.ovpn
+      - /home/deployuser/ovpn/Netherland.ovpn:/vpn/config.ovpn
+      - /home/deployuser/ovpn/apass.txt:/vpn/apass.txt
     networks:
       - vpn_network
     restart: unless-stopped

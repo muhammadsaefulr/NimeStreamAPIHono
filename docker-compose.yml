@@ -9,7 +9,7 @@ services:
     environment:
       - FIREWALL=1
     volumes:
-      - ~/ovpn/Netherland.ovpn:/vpn/config.ovpn 
+      - ~/ovpn/Netherland.ovpn:/vpn/config.ovpn
     networks:
       - vpn_network
     restart: unless-stopped

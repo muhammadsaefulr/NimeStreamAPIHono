@@ -9,7 +9,7 @@ services:
     environment:
       - FIREWALL=1
     volumes:
-      - ~/ovpn/Netherlands.ovpn:/vpn/config.ovpn 
+      - ~/ovpn/Netherland.ovpn:/vpn/config.ovpn 
     networks:
       - vpn_network
     restart: unless-stopped
@@ -27,6 +27,8 @@ services:
       - vpn_network
     depends_on:
       - vpn
+    ports:
+      - "8020:8020"
     restart: unless-stopped
 
 networks:
